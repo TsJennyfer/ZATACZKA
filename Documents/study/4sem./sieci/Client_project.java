@@ -105,7 +105,7 @@ public class Client_project {
                     String[] parts = buffFromServer.split(";");
                     if(parts[0].equals("start"))
                     {
-                        buff = ">"+parts[1];
+                        buff = ">WE START NEW GAME. "+parts[1];
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
@@ -175,34 +175,54 @@ public class Client_project {
                         System.out.println(buff);
                         filebuff += buff + "\n";
 
-                        buff = "FAILED. I'm sorry. you failed. do you want to wait next game? (press Y if yes)";
+                        buff = "FAILED. I'm sorry. you failed. wait your game";
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
-                        nextGameInd = keyboard.nextLine();
-                        outToServer.writeBytes(nextGameInd + "\n");
+                      //  dir = keyboard.nextLine();
+                      //  outToServer.writeBytes(dir + "\n");
                         
-                        filebuff += nextGameInd + "\n";
+                      //  filebuff += dir + "\n";
+
 
                     }
-                 /*   else if(parts[0].equals("win"))
+                    else if(parts[0].equals("win"))
                     {
                         buff =">" + parts[1];
-                        buff = "WIN. do you want to wait next game? (press Y if yes)";
+                        buff = "WIN. wait your game";
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
-                        nextGameInd = keyboard.nextLine();
-                        outToServer.writeBytes(nextGameInd + "\n");
+                        printBoard(parts[2]);
+                        //board to file
                         
-                        filebuff += nextGameInd + "\n";
-                    }*/
+                        buff = "move counter - " + parts[3];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        buff = "round - " + parts[4];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        buff = "you get " + parts[4] + " point in this game";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        buff = "WIN. wait your game";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                      //  dir = keyboard.nextLine();
+                     //   outToServer.writeBytes(dir + "\n");
+                     //
+                      //  filebuff += dir + "\n";
+
+                    }
 
                     else if(parts[0].equals("winnerList"))
                     {
                         buff =">" + parts[1];
                         filebuff += buff + "\n";
-
                     }
                 
                 

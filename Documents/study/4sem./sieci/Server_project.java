@@ -56,7 +56,9 @@ class Game {
     public int maxY = 20;
     public int counterMove = 0;
     public int round = 0;
-    
+    public boolean hasWinner = false;
+    public int inActiveCount = 0 ;
+
     int [][] board = new int[maxX][maxY];
     Player currentPlayer;
     
@@ -66,17 +68,6 @@ class Game {
     
     Timer timer=new Timer();
     TimerTask task=new MyTimer();
-    
-    public boolean boardFilledUp() {
-        for (int i = 0; i < maxX; i++) {
-            for (int j = 0; j < maxY; j++) {
-                if (board[i][j] == 0) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
     
     public boolean boardEmpty() {
         for (int i = 0; i < maxX; i++) {
@@ -88,21 +79,30 @@ class Game {
     }
     
     public void startGame(){
-        
-        for(Player player : players.values() )
-            player.active = 1;
-        
+        System.out.println("NEW GAME");
         round++;
         boardEmpty();
+        for(Player player : players.values() ){
+            player.active = 1;
+            player.x = 0 + (int) (Math.random() * maxX);
+            player.y = 0 + (int) (Math.random() * maxY);
+        }
     }
     
     class MyTimer extends TimerTask{
-        public void run(){
+        public void run() {
             System.out.println("go timer");
             counterMove++;
             handleUserInput();
             recalcBoard();
-            printBoard();
+            sendBoard();
+
+            if(hasWinner || inActiveCount == players.size() ) {
+                hasWinner = false;
+                if(round>5)
+                    sendWinnerList();
+                else startGame();
+            }
         }
     }
     
@@ -112,9 +112,9 @@ class Game {
         player.output.println(player.sessionId);
         
         if(players.size() == maxCount){
-            sendPlayerList();
             startGame();
-            timer.schedule( task,500,500);
+            sendPlayerList();
+            timer.schedule( task, 500, 1000);
 
             return true;
         }
@@ -123,7 +123,6 @@ class Game {
     }
     
     public void sendPlayerList() {
-        
         String playersStr = "";
         String delimiter = "";
        
@@ -148,7 +147,7 @@ class Game {
         }
     }
     
-    public void printBoard() {
+    public void sendBoard() {
         String buff  = "";
         for(int i = 0; i < maxX; i++){
             for(int j = 0; j < maxY; j++){
@@ -167,40 +166,37 @@ class Game {
                     player.lastOperationStatus = "";
                     player.inputLast = "";
                 }
-                
                 else if(player.active == 0) {
                     playerSendBuff = "failed;" + player.lastOperationStatus + ";" + buff + ";" + counterMove + ";" +round + ";" + player.x + ", " + player.y;
                     
+                    player.output.println(playerSendBuff);
+                    player.lastOperationStatus = "";//COUNT LAST POSITION
+                    player.inputLast = "";
+                    player.active = -1;
+                }
+                else if(player.active == 2){
+                    System.out.println("we are in 2 activity status");
+                    player.points++;
+                    playerSendBuff = "win;" + player.lastOperationStatus + ";" + buff + ";" + counterMove + ";" +round +";"+player.points;
                     player.output.println(playerSendBuff);
                     player.lastOperationStatus = "";
                     player.inputLast = "";
                     player.active = -1;
                 }
-				//else if(player.)
-				//make list for 1 round winner
-				//if all failed, send to last - "win"
-				//player.points++; round++;
-				//if round>5 sendWinnerList();
-                
             }
         }
    }
-	
-	
+
     public void recalcBoard(){
-        int inActiveCount = 0;
+        inActiveCount = 0;
         
         for ( Player player : players.values() ) {
-            System.out.println("ACT"+player.active );
+            System.out.println("ACT " + player.sessionId + " "+ player.active +" X:"+player.x+" y:"+player.y);
 
-            if(player.active== -1){
+            if(player.active < 1){
                 inActiveCount++;
-
-                if(player.dir.length() > 0 )
-                    if(player.dir.charAt(0) == 'Y')
-					{}
-						
             }
+            
             if(player.dir.length() > 0 && player.active==1){
                char direction = player.dir.charAt(0);
                 
@@ -243,16 +239,24 @@ class Game {
                 }
                 board[player.x][player.y] = player.sessionId;
             }
-            
-            
         }
-        System.out.println(inActiveCount + " "+ players.size());
+        hasWinner();
+
+    }
+    
+    public void hasWinner(){
+        System.out.println("inAct "+inActiveCount + " "+ players.size());
         
-        if(inActiveCount == players.size() ) {
-            round++;
-            if(round>5)
-                sendWinnerList();
-            else startGame();
+        if(inActiveCount == players.size()-1 ){
+            System.out.println("WIN!!!");
+
+            hasWinner = true;
+            for( Player player : players.values() ){
+                if(player.active == 1){
+                    System.out.println("CHANGED TO 2");
+                    player.active = 2;
+                }
+            }
         }
     }
     
@@ -300,15 +304,12 @@ class Game {
 
         public Player(Socket socket, int sessionId) {
             this.socket = socket;
-            this.name="";
+            this.name= "";
             this.sessionId = sessionId;
         }
      
         public void run(){
             try {
-                this.x = 0 + (int) (Math.random() * maxX);
-                this.y = 0 + (int) (Math.random() * maxY);
-                
                 output = new PrintWriter(socket.getOutputStream(), true);
                 output.println("You are connected");
                 output.println(maxX);
