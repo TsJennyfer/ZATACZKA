@@ -25,7 +25,7 @@ public class Server_project {
         int sessionId = 0;
         
         try {
-            serverSocket = new ServerSocket(8780);
+            serverSocket = new ServerSocket(8781);
             System.out.println("Server is Running");
             try {
                 Game game = new Game();
@@ -42,6 +42,7 @@ public class Server_project {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            //System.out.println("already started");
         }
     }
 }
@@ -53,6 +54,8 @@ class Game {
     public int maxCount = 3;
     public int maxX = 20;
     public int maxY = 20;
+    public int counterMove = 0;
+    public int round = 0;
     
     int [][] board = new int[maxX][maxY];
     Player currentPlayer;
@@ -85,13 +88,18 @@ class Game {
     }
     
     public void startGame(){
+        
+        for(Player player : players.values() )
+            player.active = 1;
+        
+        round++;
         boardEmpty();
-        timer.schedule( task,500,500);
     }
     
     class MyTimer extends TimerTask{
         public void run(){
             System.out.println("go timer");
+            counterMove++;
             handleUserInput();
             recalcBoard();
             printBoard();
@@ -101,11 +109,13 @@ class Game {
     public boolean addPlayer(Player player)
     {
         players.put(player.loginName, player);
-        player.output.println("ok. your id is " + player.sessionId + ". Wait your game");
+        player.output.println(player.sessionId);
         
         if(players.size() == maxCount){
             sendPlayerList();
             startGame();
+            timer.schedule( task,500,500);
+
             return true;
         }
         if(players.size() > maxCount) return false;
@@ -121,81 +131,149 @@ class Game {
             playersStr += delimiter + "player " + player.sessionId + ": " + player.loginName + " ( coordinates " +player.x + " and " + player.y + " ) ";
             delimiter = ", ";
         }
+        
+        String playerSendBuff = "start;GAME STARTED with: " + playersStr ;
 
         for( Player player : players.values() ){
-            player.output.println("GAME STARTED with: " + playersStr);
+            player.output.println(playerSendBuff);
         }
     }
     
     public void handleUserInput(){
         for( Player player : players.values() ){
             if(!player.inputLast.isEmpty()){
-                System.out.println("MESSAGE FROM CLIENT" + player.sessionId + player.inputLast);
-
+                //System.out.println("MESSAGE FROM CLIENT" + player.sessionId + player.inputLast);
                 player.dir = player.inputLast;
             }
         }
     }
     
-    public void printBoard()
-    {
-        System.out.println("print");
+    public void printBoard() {
         String buff  = "";
         for(int i = 0; i < maxX; i++){
             for(int j = 0; j < maxY; j++){
                 buff += board[i][j];
             }
         }
-       
-        System.out.println(">"+buff);
-
+        
         for( Player player : players.values() ){
             if(!player.inputLast.isEmpty()){
-               // System.out.println(">"+buff);
-                player.output.println(buff);
-                player.inputLast = "";
+                String playerSendBuff = "";
+                
+                if( player.active == 1 ){
+                    playerSendBuff = "board;" + player.lastOperationStatus + ";" + buff + ";" + counterMove + ";" +round;
+
+                    player.output.println(playerSendBuff);
+                    player.lastOperationStatus = "";
+                    player.inputLast = "";
+                }
+                
+                else if(player.active == 0) {
+                    playerSendBuff = "failed;" + player.lastOperationStatus + ";" + buff + ";" + counterMove + ";" +round + ";" + player.x + ", " + player.y;
+                    
+                    player.output.println(playerSendBuff);
+                    player.lastOperationStatus = "";
+                    player.inputLast = "";
+                    player.active = -1;
+                }
+				//else if(player.)
+				//make list for 1 round winner
+				//if all failed, send to last - "win"
+				//player.points++; round++;
+				//if round>5 sendWinnerList();
+                
             }
         }
-    }
-    
+   }
+	
+	
     public void recalcBoard(){
-            System.out.println("recacl");
+        int inActiveCount = 0;
+        
         for ( Player player : players.values() ) {
-            //System.out.println(player.x + " " + player.y + " " + player.sessionId);
-            //System.out.println(player.dir);
-            System.out.println(player.dir);
-            if(player.dir.length() > 0){
-            
-                char direction = player.dir.charAt(0);
+            System.out.println("ACT"+player.active );
+
+            if(player.active== -1){
+                inActiveCount++;
+
+                if(player.dir.length() > 0 )
+                    if(player.dir.charAt(0) == 'Y')
+					{}
+						
+            }
+            if(player.dir.length() > 0 && player.active==1){
+               char direction = player.dir.charAt(0);
                 
                 switch(direction){
                     case 'S':{
-                        player.y = player.y+1;
-                        //player.output.println("OK1");
-                        System.out.println("ok");
+                        if(validMove( player, player.x, player.y+1 )){
+                            player.y = player.y+1;
+                            player.lastOperationStatus = "ok";
+                        }
+                        else player.lastOperationStatus = "failed";
                         break;
                     }
                     case 'N':{
-                        player.y = player.y-1;
-                        //player.output.println("OK2");
+                        if(validMove( player, player.x, player.y-1 )){
+                            player.y = player.y-1;
+                            player.lastOperationStatus = "ok";
+                        }
+                        else player.lastOperationStatus = "failed";
                         break;
                     }
                     case 'E':{
-                        player.x = player.x+1;
-                        //player.output.println("OK3");
+                        if(validMove( player, player.x+1, player.y )){
+                            player.x = player.x+1;
+                            player.lastOperationStatus = "ok";
+                        }
+                        else player.lastOperationStatus = "failed";
                         break;
                     }
                     case 'W':{
-                        player.x = player.x-1;
-                        //player.output.println("OK4");
+                        if(validMove( player, player.x-1, player.y )){
+                            player.x = player.x-1;
+                            player.lastOperationStatus = "ok";
+                        }
+                        else player.lastOperationStatus = "failed";
                         break;
                     }
-                    default: System.out.println("not correct");//player.output.println("not correct value");
+                    default: {
+                        player.lastOperationStatus = "not correct symbol";
+                    }
                 }
+                board[player.x][player.y] = player.sessionId;
             }
             
-            board[player.x][player.y] = player.sessionId;
-            System.out.println(player.x + " "+ player.y);
+            
+        }
+        System.out.println(inActiveCount + " "+ players.size());
+        
+        if(inActiveCount == players.size() ) {
+            round++;
+            if(round>5)
+                sendWinnerList();
+            else startGame();
+        }
+    }
+    
+    public boolean validMove(Player player, int x, int y){
+        if( x>=maxX || x<0 || y>=maxY || y<0){
+            player.active = 0;
+            System.out.println("VALID:"+player.active);
+            return false;
+        }
+        else if( board[x][y] != 0){
+            player.active = 0;
+            System.out.println("VALID:"+player.active);
+            return false;
+        }
+        else return true;
+    }
+    
+    public void sendWinnerList(){ //MAKE WINNER LIST
+        String buff;
+        for( Player player : players.values() ){
+            //max(player.points);
         }
     }
     
@@ -213,6 +291,9 @@ class Game {
         public int y;
         public String dir = "";
         public String inputLast = "";
+        public String lastOperationStatus = "";
+        public int active = -1;
+        public int points = 0;
        
         public Player(){
         }
@@ -242,7 +323,6 @@ class Game {
                 else {
                     output.println("Sorry. The game already started");
                     this.socket.close();
-                //how to close correctly
                 }
 
                 while(true){

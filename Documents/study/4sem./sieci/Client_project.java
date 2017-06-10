@@ -6,12 +6,36 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Scanner;
 import java.net.ConnectException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
+import java.io.File;
+import java.io.IOException;
+
 
 public class Client_project {
     
+    public static int maxX;
+    public static int maxY;
+    public static String filebuff = "";
+    
+    public static void write(String id){
+ 
+        String namefile = "communication"+id+".txt";
+
+        try{
+            PrintWriter writer = new PrintWriter(namefile, "UTF-8");
+            writer.println("File writing started. ");
+            writer.println(filebuff);
+            writer.println("File writing ended. ");
+            writer.close();
+        } catch (IOException e) {
+            // do something
+        }
+    }
+    
     public static void printBoard(String buff)
     {
-        //why exception? why can't do on 0?
         for (int i = 0 ; i < maxX ; i++){
             for (int j = 0 ; j < maxY ; j++){
                 System.out.print( buff.charAt( i * maxX + j ));
@@ -21,31 +45,41 @@ public class Client_project {
         }
     }
     
-    public static int maxX;
-    public static int maxY;
-    
     public static void main(String[] args) throws Exception {
         Scanner keyboard = new Scanner(System.in);
         
+        
         String myName = "";
         String dir = "";
+        String buff = "";
+        String nextGameInd = "";
         
-        System.out.println("Hello! Welcome to Zataczka game! We need only 8 people to start, so let's go! ");
-        
+        buff = "Hello! Welcome to Zataczka game! We need only 8 people to start, so let's go! ";
+        System.out.println(buff);
+        filebuff += buff +" \n";
         
         try{
-            Socket clientSocket = new Socket("localhost", 8780);
+            Socket clientSocket = new Socket("localhost", 8781);
             
-            System.out.println("Connection started");
+            buff = "Connection started";
+            System.out.println(buff);
+            filebuff +=  buff + " \n";
+            
+            ///new round
             
             BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            System.out.println(">" + inFromServer.readLine());
+            buff = ">" + inFromServer.readLine();
+            
+            System.out.println(buff);
+            filebuff += buff + "\n";
             
             maxX = Integer.parseInt(inFromServer.readLine());
             maxY = Integer.parseInt(inFromServer.readLine());
             
             while(myName.isEmpty()){
-                System.out.println("LOGIN" + "(put your name) :");
+                buff = "LOGIN" + "(put your name) :";
+                System.out.println(buff);
+                filebuff += buff + "\n";
                 myName = keyboard.nextLine();
                 //the same name
             }
@@ -53,39 +87,131 @@ public class Client_project {
             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
             
             outToServer.writeBytes(myName + "\n");
+            filebuff += myName + "\n";
             
-            String buff = inFromServer.readLine();
+            String id = inFromServer.readLine();
             
-            System.out.println(">" + buff);
-            System.out.println(">" + inFromServer.readLine());
-            System.out.println("your board is " + maxX + " * " + maxY);
-            //System.out.println(">" + inFromServer.readLine());
+            buff = ">ok. wait next indications.";
+            System.out.println(buff);
+            filebuff += buff + "\n";
             
-           // System.out.println("the starting board is:");
-
-            //buff = inFromServer.readLine();
-          //  printBoard(buff);
-            //System.out.println("BEGIN");
-
             while(true){
-                System.out.println("put your move(use only W, E, S, N)");
+                
+                    String buffFromServer = "";
+                
+                    buffFromServer = inFromServer.readLine();
+                    //System.out.println(">" + buff);
 
-                dir = keyboard.nextLine();
-                outToServer.writeBytes(dir + "\n");
+                    String[] parts = buffFromServer.split(";");
+                    if(parts[0].equals("start"))
+                    {
+                        buff = ">"+parts[1];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        buff = ">your id is " + id + ".";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        buff = "your board is " + maxX + " * " + maxY;
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        
+                        buff = "put your move(use only W, E, S, N)";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        dir = keyboard.nextLine();
+                        outToServer.writeBytes(dir + "\n");
+                        
+                        filebuff += dir + "\n";
+                        
+                    }
+                    else if(parts[0].equals("board"))
+                    {
+                        buff = ">" + parts[1];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+
+                        printBoard(parts[2]);
+                        //board to file
+                        
+                        buff = "move counter - " + parts[3];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+
+                        buff = "round - " + parts[4];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+
+                        buff = "put your move(use only W, E, S, N)";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        dir = keyboard.nextLine();
+                        outToServer.writeBytes(dir + "\n");
+                        
+                        filebuff += dir + "\n";
+                    }
+                    else if(parts[0].equals("failed"))
+                    {
+                        buff = ">"+parts[1];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+
+                        printBoard(parts[2]);
+                        //board to file
+
+                        buff = "move counter - " + parts[3];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        buff = "round - " + parts[4];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+
+                        buff = "last position - " + parts[4];
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+
+                        buff = "FAILED. I'm sorry. you failed. do you want to wait next game? (press Y if yes)";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        nextGameInd = keyboard.nextLine();
+                        outToServer.writeBytes(nextGameInd + "\n");
+                        
+                        filebuff += nextGameInd + "\n";
+
+                    }
+                 /*   else if(parts[0].equals("win"))
+                    {
+                        buff =">" + parts[1];
+                        buff = "WIN. do you want to wait next game? (press Y if yes)";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        nextGameInd = keyboard.nextLine();
+                        outToServer.writeBytes(nextGameInd + "\n");
+                        
+                        filebuff += nextGameInd + "\n";
+                    }*/
+
+                    else if(parts[0].equals("winnerList"))
+                    {
+                        buff =">" + parts[1];
+                        filebuff += buff + "\n";
+
+                    }
                 
-               // buff = null;
-                //buff = inFromServer.readLine();
-               // System.out.println(">" + buff);
                 
-                //String buff = "";
-                String buff1 = inFromServer.readLine();
-               // System.out.println(">" + buff1);
-                printBoard(buff1);
+                write(id);
+                
             }
+            
         } catch (ConnectException e) {
             System.out.println("Connection refused");
         }
-
-        
     }
 }
