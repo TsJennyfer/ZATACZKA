@@ -65,8 +65,6 @@ public class Client_project {
             System.out.println(buff);
             filebuff +=  buff + " \n";
             
-            ///new round
-            
             BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             buff = ">" + inFromServer.readLine();
             
@@ -100,7 +98,6 @@ public class Client_project {
                     String buffFromServer = "";
                 
                     buffFromServer = inFromServer.readLine();
-                    //System.out.println(">" + buff);
 
                     String[] parts = buffFromServer.split(";");
                     if(parts[0].equals("start"))
@@ -166,30 +163,32 @@ public class Client_project {
                         buff = "move counter - " + parts[3];
                         System.out.println(buff);
                         filebuff += buff + "\n";
-                        
+
                         buff = "round - " + parts[4];
                         System.out.println(buff);
                         filebuff += buff + "\n";
 
-                        buff = "last position - " + parts[4];
-                        System.out.println(buff);
-                        filebuff += buff + "\n";
+                        //buff = "last position - " + parts[4];
+                       // System.out.println(buff);
+                        //filebuff += buff + "\n";
 
-                        buff = "FAILED. I'm sorry. you failed. wait your game";
+                        buff = "FAILED. I'm sorry. you failed. ";
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
-                      //  dir = keyboard.nextLine();
-                      //  outToServer.writeBytes(dir + "\n");
+                        buff = "START GAME. PUT YOUR MOVE";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
                         
-                      //  filebuff += dir + "\n";
-
-
+                        dir = keyboard.nextLine();
+                        outToServer.writeBytes(dir + "\n");
+                        
+                        filebuff += dir + "\n";
                     }
                     else if(parts[0].equals("win"))
                     {
                         buff =">" + parts[1];
-                        buff = "WIN. wait your game";
+                        buff = "WIN. ";
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
@@ -199,35 +198,40 @@ public class Client_project {
                         buff = "move counter - " + parts[3];
                         System.out.println(buff);
                         filebuff += buff + "\n";
-                        
+
                         buff = "round - " + parts[4];
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
-                        buff = "you get " + parts[4] + " point in this game";
-                        System.out.println(buff);
-                        filebuff += buff + "\n";
+                        //buff = "you get " + parts[4] + " point in this game";
+                       // System.out.println(buff);
+                        //filebuff += buff + "\n";
                         
                         buff = "WIN. wait your game";
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
-                      //  dir = keyboard.nextLine();
-                     //   outToServer.writeBytes(dir + "\n");
-                     //
-                      //  filebuff += dir + "\n";
-
+                        buff = "START GAME. PUT YOUR MOVE";
+                        System.out.println(buff);
+                        filebuff += buff + "\n";
+                        
+                        dir = keyboard.nextLine();
+                        outToServer.writeBytes(dir + "\n");
+                        filebuff += dir + "\n";
                     }
-
                     else if(parts[0].equals("winnerList"))
                     {
-                        buff =">" + parts[1];
+                        buff =">ENDGAME" + parts[1];
+                        System.out.println(buff);
                         filebuff += buff + "\n";
+                        break;
+                       // try{
+                       //     clientSocket.close();
+                       // } catch (ConnectException e) {
+                       //     System.out.println("Connection refused");
+                       // }
                     }
-                
-                
                 write(id);
-                
             }
             
         } catch (ConnectException e) {
