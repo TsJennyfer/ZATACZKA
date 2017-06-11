@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -69,7 +68,7 @@ class Game {
     Timer timer=new Timer();
     TimerTask task=new MyTimer();
     
-    public boolean boardEmpty() {
+    public boolean isBoardEmpty() {
         for (int i = 0; i < maxX; i++) {
             for (int j = 0; j < maxY; j++) {
                 board[i][j] = 0;
@@ -81,7 +80,7 @@ class Game {
     public void startGame(){
         System.out.println("NEW GAME");
         round++;
-        boardEmpty();
+        isBoardEmpty();
         for(Player player : players.values() ){
             player.active = 1;
             player.x = 0 + (int) (Math.random() * maxX);
@@ -202,7 +201,7 @@ class Game {
                 
                 switch(direction){
                     case 'S':{
-                        if(validMove( player, player.x, player.y+1 )){
+                        if(isValidMove( player, player.x, player.y+1 )){
                             player.y = player.y+1;
                             player.lastOperationStatus = "ok";
                         }
@@ -210,7 +209,7 @@ class Game {
                         break;
                     }
                     case 'N':{
-                        if(validMove( player, player.x, player.y-1 )){
+                        if(isValidMove( player, player.x, player.y-1 )){
                             player.y = player.y-1;
                             player.lastOperationStatus = "ok";
                         }
@@ -218,7 +217,7 @@ class Game {
                         break;
                     }
                     case 'E':{
-                        if(validMove( player, player.x+1, player.y )){
+                        if(isValidMove( player, player.x+1, player.y )){
                             player.x = player.x+1;
                             player.lastOperationStatus = "ok";
                         }
@@ -226,7 +225,7 @@ class Game {
                         break;
                     }
                     case 'W':{
-                        if(validMove( player, player.x-1, player.y )){
+                        if(isValidMove( player, player.x-1, player.y )){
                             player.x = player.x-1;
                             player.lastOperationStatus = "ok";
                         }
@@ -260,7 +259,7 @@ class Game {
         }
     }
     
-    public boolean validMove(Player player, int x, int y){
+    public boolean isValidMove(Player player, int x, int y){
         if( x>=maxX || x<0 || y>=maxY || y<0){
             player.active = 0;
             System.out.println("VALID:"+player.active);
@@ -287,9 +286,6 @@ class Game {
         Socket socket;
         BufferedReader input;
         public PrintWriter output;
-        String name;
-        int win;
-        int lost;
         public String loginName = "";
         public int x;
         public int y;
@@ -304,7 +300,6 @@ class Game {
 
         public Player(Socket socket, int sessionId) {
             this.socket = socket;
-            this.name= "";
             this.sessionId = sessionId;
         }
      
@@ -329,147 +324,9 @@ class Game {
                 while(true){
                     inputLast = reader.readLine();
                 }
-                
-                
             } catch (IOException e) {
                 System.out.println("Player died: " + this.loginName);
             }
         }
     }
 }
-    
-        /*   
-         ДАЛЬШЕ НЕ МОЕ. ПРОСТО КОММЕНТАРИИ. ЕЩЕ НЕ РАЗБИРАЛА
-         
-         public synchronized boolean legalMove(int location, Player player, PrintWriter output) {
-         if (player == currentPlayer && board[location] == null) {
-         board[location] = currentPlayer;
-         //currentPlayer = currentPlayer.opponent;
-         //currentPlayer.otherPlayerMoved(location);
-         
-         output.println("OK");
-         if (hasWinner() || boardFilledUp()) {
-         output.println(hasWinner() ? "WIN"
-         : boardFilledUp() ? "WIN"
-         : "");
-         currentPlayer.win++;
-         return true;
-         }
-         
-         else// (!hasWinner() && !boardFilledUp())
-         {
-         Random r = new Random();
-         int ile=r.nextInt(25);
-         while(board[ile] != null) ile=r.nextInt(25);
-         board[ile] = currentPlayer.opponent;
-         currentPlayer.otherPlayerMoved(ile);
-         }
-         
-         
-         return true;
-         }
-         return false;
-         }
-         */
-      /*  public void otherPlayerMoved(int location) {
-            output.println("OPPONENT " + location);
-            if (hasWinner() || boardFilledUp()) {
-                output.println(hasWinner() ? "LOST" : boardFilledUp() ? "WIN" : "");
-                this.lost++;
-            }
-        }
-        */
-        /*!!*/ /*public boolean hasWinner() {
-                return
-                (board[0] != null && board[0] == board[1] && board[0] == board[2] && board[0] == board[3] && board[0] == board[4])
-                ||(board[5] != null && board[5] == board[6] && board[5] == board[7] && board[5] == board[8] && board[5] == board[9])
-                ||(board[10] != null && board[10] == board[11] && board[10] == board[12] && board[10] == board[13] && board[10] == board[14])
-                ||(board[15] != null && board[15] == board[16] && board[15] == board[17] && board[15] == board[18] && board[15] == board[19])
-                ||(board[20] != null && board[20] == board[21] && board[20] == board[22] && board[20] == board[23] && board[20] == board[24])
-                ||(board[0] != null && board[0] == board[5] && board[0] == board[10] && board[0] == board[15] && board[0] == board[20])
-                ||(board[1] != null && board[1] == board[6] && board[1] == board[11] && board[1] == board[16] && board[1] == board[21])
-                ||(board[2] != null && board[2] == board[7] && board[2] == board[12] && board[2] == board[17] && board[2] == board[22])
-                ||(board[3] != null && board[3] == board[8] && board[3] == board[13] && board[3] == board[18] && board[3] == board[23])
-                ||(board[4] != null && board[4] == board[9] && board[4] == board[14] && board[4] == board[19] && board[4] == board[24])
-                ||(board[0] != null && board[0] == board[6] && board[0] == board[12] && board[0] == board[18] && board[0] == board[24])
-                ||(board[4] != null && board[4] == board[8] && board[4] == board[12] && board[4] == board[16] && board[4] == board[20]);
-                }*/
-        
-      /*  public void run() {
-            try {
-                // The thread is only started after everyone connects.
-                //output.println("MESSAGE All players connected");
-                
-                // Tell the first player that it is her turn.
-                //if (mark == 'X') {
-                //output.println("MESSAGE Your move");
-                //}
-                
-                // Repeatedly get commands from the client and process them.
-                while (this.lost+this.win<200) {
-                    String command = input.readLine();
-                    int location =-1;
-                    if (this.name.length()>0 && command.startsWith("MOVE")) {
-                        try {
-                            location = Integer.parseInt(command.substring(5));
-                        } catch(Exception e)
-                        {  }
-                        if(location <0 || location>=25)  output.println("ERROR");
-                        else
-                            if (legalMove(location, this, output)) {
-                                
-                            } else {
-                                output.println("ERROR");
-                            }
-                    } else if (command.startsWith("LOGIN")) {
-                        output.println("OK");
-                        name = command.substring(5, command.length());
-                    } else if (command.startsWith("QUIT")) {
-                        return;
-                    } else {
-                        output.println("ERROR");
-                    }
-                    for(int i=0;i<25;i++)
-                    {
-                        if(board[i] == null)
-                            System.out.print(" ");
-                        else
-                            if(board[i] == this)
-                                System.out.print(".");
-                            else System.out.print("+");
-                    }
-                    System.out.println("<-");
-                    if(this.lost+this.win<200 && (hasWinner() || boardFilledUp())) {
-                        for(int i=0;i<25;i++) board[i]=null;
-                        output.println("NEW GAME");
-                        
-                    }
-                }
-                if(this.win>=175) {
-                    try{
-                        output.println("SUCCESS");
-                        String filename= "wyniki.txt";
-                        FileWriter fw = new FileWriter(filename,true); //the true will append the new data
-                        fw.write(this.name + '\n');//appends the string to the file
-                        fw.close();
-                        
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    System.out.println(this.name + " " + this.win + " " + this.lost);
-                }
-                else
-                {
-                    output.println("FAILED");
-                    System.out.println(this.name + " " + this.win + " " + this.lost);
-                }
-            } catch (IOException e) {
-                System.out.println("Player died: " + e);
-            } finally {
-                
-                
-                try {socket.close();} catch (IOException e) {}
-            }
-        }*/
-
