@@ -114,7 +114,6 @@ public class Client_project {
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         
-                        
                         buff = "put your move(use only W, E, S, N)";
                         System.out.println(buff);
                         filebuff += buff + "\n";
@@ -221,15 +220,10 @@ public class Client_project {
                     }
                     else if(parts[0].equals("winnerList"))
                     {
-                        buff =">ENDGAME" + parts[1];
+                        buff =">ENDGAME. " + parts[1];
                         System.out.println(buff);
                         filebuff += buff + "\n";
                         break;
-                       // try{
-                       //     clientSocket.close();
-                       // } catch (ConnectException e) {
-                       //     System.out.println("Connection refused");
-                       // }
                     }
                 write(id);
             }

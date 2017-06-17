@@ -144,7 +144,7 @@ class Game {
     
     public void handleUserInput(){
         for( Player player : players.values() ){
-            if(!player.inputLast.isEmpty()){
+            if( player.inputLast !=null && !player.inputLast.isEmpty()){
                 player.dir = player.inputLast;
             }
         }
@@ -160,7 +160,7 @@ class Game {
         
         for( Player player : players.values() ){
             String playerSendBuff = "";
-            if(!player.inputLast.isEmpty()){
+            if( player.inputLast !=null && !player.inputLast.isEmpty()){
                 if(!winnerBuff.isEmpty()){
                     player.output.println(winnerBuff);
                 }
@@ -308,6 +308,15 @@ class Game {
         System.out.println(winnerBuff);
     }
     
+    public void removeGamer(Player player){
+        players.remove(player.sessionId);
+        try{
+            player.socket.close();
+
+        } catch (IOException e) {}
+        //player.BufferedReader
+    }
+    
     class Player extends Thread implements Comparable<Player> {
         public int sessionId;
         Player playerX;
@@ -353,11 +362,11 @@ class Game {
                     output.println("Sorry. The game already started");
                     this.socket.close();
                 }
-
                 do
                     inputLast = reader.readLine();
-                //while(!inputLast.isEmpty());
-                while(true);
+                while( inputLast !=null && !inputLast.isEmpty() );
+                //while(true);
+                removeGamer(this);
             } catch (IOException e) {
                 System.out.println("Player died: " + this.loginName);
             }
